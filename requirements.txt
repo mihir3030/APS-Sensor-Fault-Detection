@@ -11,6 +11,8 @@ jupyterlab
 flask
 python-dotenv
 pymongo==4.2.0
+# pymongo[srv]==4.2.0 # for connecting to mongo atlas server
+
 
 # mlflow
 # dvc
