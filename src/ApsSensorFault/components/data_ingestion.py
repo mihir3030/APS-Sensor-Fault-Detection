@@ -5,6 +5,8 @@ from ApsSensorFault.entity.config_entity import DataIngestionConfig
 from ApsSensorFault.entity.artifact_entity import DataIngestionArtifact
 from ApsSensorFault.data_access.sensor_data import SensorData
 from sklearn.model_selection import train_test_split
+from ApsSensorFault.utils.main_util import read_yaml_file
+from ApsSensorFault.constant.training_pipeline import SCHEMA_FILE_PATH
 
 class DataIngestion:
 
@@ -69,10 +71,16 @@ class DataIngestion:
     def initiate_data_ingestion(self) -> DataIngestionArtifact:
         try:
             dataframe = self.export_data_into_feature_store()
+            log.info(f"before dropping columns columns{len(dataframe.columns)}")
+            self._schema_config = read_yaml_file(SCHEMA_FILE_PATH)
+            dataframe = dataframe.drop(self._schema_config['drop_columns'], axis=1)
+            log.info(f"after dropping columns columns{len(dataframe.columns)}")
             self.split_data_as_train_test_split(dataframe=dataframe)
-            data_ingestion_artifact = DataIngestionArtifact(training_file_path=self.data_ingestion_config.training_file_path,
-                                                            testing_file_path=self.data_ingestion_config.tresting_file_path)
+            # log.info(f"training file path is {self.data_ingestion_config.training_file_path}")
+            data_ingestion_artifact = DataIngestionArtifact(trained_file_path=self.data_ingestion_config.training_file_path,
+                                                            tested_file_path=self.data_ingestion_config.tresting_file_path)
             
+
             return data_ingestion_artifact
             
         except Exception as e:
