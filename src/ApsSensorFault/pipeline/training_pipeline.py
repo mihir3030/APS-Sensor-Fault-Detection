@@ -1,8 +1,9 @@
 import os
-from ApsSensorFault.entity.config_entity import TrainingPipelineConfig, DataIngestionConfig
+from ApsSensorFault.entity.config_entity import TrainingPipelineConfig, DataIngestionConfig, DataValidationConfig
 from ApsSensorFault.logging import log
-from ApsSensorFault.entity.artifact_entity import DataIngestionArtifact
+from ApsSensorFault.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact
 from ApsSensorFault.components.data_ingestion import DataIngestion
+from ApsSensorFault.components.data_validation import DataValidation
 
 class TrainingPipeline:
     def __init__(self):
@@ -14,9 +15,9 @@ class TrainingPipeline:
             log.info(f">>>>>>>>>>>>>>>>> Data Ingestion Stage started")
             
             data_ingestion_config = DataIngestionConfig(training_pipeline_config=self.trainig_pipeline_config)
-            data_ingestion_artifact = DataIngestion(data_ingestion_config)
-            data_ingestion_artifact.initiate_data_ingestion()
-            log.info(f"dataingesion compleated at {data_ingestion_artifact}")
+            data_ingestion = DataIngestion(data_ingestion_config)
+            data_ingestion_artifact = data_ingestion.initiate_data_ingestion()
+            log.info(f"data ingesion compleated at {data_ingestion_artifact}")
             log.info(f">>>>>>>>>>>>>>>>> Data Ingestion Stage compleated successfully\n")
             return data_ingestion_artifact
             
@@ -24,9 +25,16 @@ class TrainingPipeline:
             log.exception(e)
             raise e
         
-    def start_data_validation(self) -> DataIngestionArtifact:
+    def start_data_validation(self, data_ingestion_artifact: DataIngestionArtifact) -> DataValidationArtifact:
         try:
-            pass
+            log.info(f">>>>>>>>>>>>>>>>> Data Validation Stage started")
+            data_validation_config = DataValidationConfig(self.trainig_pipeline_config)
+            data_Validation = DataValidation(data_ingestion_artifact=data_ingestion_artifact, data_validation_config=data_validation_config)
+            data_validation_artifact = data_Validation.initiate_data_validation()
+            log.info(f"data validation compleated at {data_validation_artifact}")
+            log.info(f">>>>>>>>>>>>>>>>> Data Validation Stage compleated successfully\n")
+            return data_validation_artifact
+            
         except Exception as e:
             log.exception(e)
             raise e
@@ -61,7 +69,9 @@ class TrainingPipeline:
         
     def run_pipeline(self):
         try:
-            data_ingestion_artifact: DataIngestionArtifact = self.start_data_ingestion()
+            data_ingestion_artifact2: DataIngestionArtifact = self.start_data_ingestion()
+            # print(f"222222 = {data_ingestion_artifact2}")
+            data_validation_artifact: DataValidationArtifact = self.start_data_validation(data_ingestion_artifact=data_ingestion_artifact2)
         except Exception as e:
             log.exception(e)
             raise e
