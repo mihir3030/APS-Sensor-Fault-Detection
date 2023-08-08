@@ -123,15 +123,19 @@ class DataValidation:
             if not status:
                 error_message = f"{error_message} testing set does not contain all numerical columns"
             elif status:
-                log.info("training and testing data contain all numerical columns")
+                log.info("training and testing contain all numerical columns")
 
             if len(error_message)>0:
                 raise Exception(error_message)
             
             elif len(error_message)<=0:
                 log.info("train and test data are matching with our schema file")
+                
 
             # check data drift
+            """
+            my name is mihir dholakia i am jr. data scitinst
+            """
             status = self.detect_dataset_drift(base_df=train_dataframe, current_df=test_dataframe)
             
 

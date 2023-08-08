@@ -1,9 +1,10 @@
 import os
-from ApsSensorFault.entity.config_entity import TrainingPipelineConfig, DataIngestionConfig, DataValidationConfig
+from ApsSensorFault.entity.config_entity import TrainingPipelineConfig, DataIngestionConfig, DataValidationConfig, DataTransformationConfig
 from ApsSensorFault.logging import log
-from ApsSensorFault.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact
+from ApsSensorFault.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact, DataTransformationArtifact
 from ApsSensorFault.components.data_ingestion import DataIngestion
 from ApsSensorFault.components.data_validation import DataValidation
+from ApsSensorFault.components.data_transformation import DataTransformation
 
 class TrainingPipeline:
     def __init__(self):
@@ -39,9 +40,18 @@ class TrainingPipeline:
             log.exception(e)
             raise e
         
-    def start_data_transformation(self):
+    def start_data_transformation(self, data_validation_artifact: DataValidationArtifact):
         try:
-            pass
+            log.info(f">>>>>>>>>>>>>>>>> Data Validation Stage started")
+            data_transformation_config = DataTransformationConfig(training_pipeline_config=self.trainig_pipeline_config)
+            data_transformation = DataTransformation(data_validation_artifact=data_validation_artifact,
+                                                      data_transformation_config=data_transformation_config)
+            data_transformation_artifact = data_transformation.initiate_data_transformation()
+            log.info(f"data transformation compleated at {data_transformation_artifact}")
+            log.info(f">>>>>>>>>>>>>>>>> Data transformation Stage compleated successfully\n")
+            
+            return data_transformation_artifact
+
         except Exception as e:
             log.exception(e)
             raise e
@@ -69,9 +79,10 @@ class TrainingPipeline:
         
     def run_pipeline(self):
         try:
-            data_ingestion_artifact2: DataIngestionArtifact = self.start_data_ingestion()
+            data_ingestion_artifact2 = self.start_data_ingestion()
             # print(f"222222 = {data_ingestion_artifact2}")
-            data_validation_artifact: DataValidationArtifact = self.start_data_validation(data_ingestion_artifact=data_ingestion_artifact2)
+            data_validation_artifact = self.start_data_validation(data_ingestion_artifact=data_ingestion_artifact2)
+            data_transformation_artifact = self.start_data_transformation(data_validation_artifact=data_validation_artifact) 
         except Exception as e:
             log.exception(e)
             raise e
